@@ -79,6 +79,9 @@
     },
     {
       "name": "idntmed"
-    }
+    },
+	{
+  "name": "tel_adi"
+    }	
   ]
 }

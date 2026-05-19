@@ -73,10 +73,13 @@ public sealed class MappingSystem : EntitySystem
             }
 
             _currentlyAutosaving[uid] = (CalculateNextTime(), name);
-            var saveDir = Path.Combine(_cfg.GetCVar(CCVars.AutosaveDirectory), name);
-            _resMan.UserData.CreateDir(new ResPath(saveDir).ToRootedPath());
 
-            var path = new ResPath(Path.Combine(saveDir, $"{DateTime.Now:yyyy-M-dd_HH.mm.ss}-AUTO.yml"));
+            // Forge-fix: normalize to forward slashes for ResPath compatibility on Windows
+            var saveDir = (_cfg.GetCVar(CCVars.AutosaveDirectory) + "/" + name).Replace('\\', '/').Trim('/');
+            _resMan.UserData.CreateDir(new ResPath("/" + saveDir));
+
+            var timestamp = DateTime.Now.ToString("yyyy-M-dd_HH.mm.ss");
+            var path = new ResPath($"/{saveDir}/{timestamp}-AUTO.yml");
             Log.Info($"Autosaving map {name} ({uid}) to {path}. Next save in {ReadableTimeLeft(uid)} seconds.");
 
             if (HasComp<MapComponent>(uid))
@@ -124,7 +127,9 @@ public sealed class MappingSystem : EntitySystem
             return;
         }
 
-        _currentlyAutosaving[uid] = (CalculateNextTime(), Path.GetFileName(path));
+        // Forge-fix: sanitize filename — strip path separators and trim spaces
+        var fileName = Path.GetFileName(path).Replace('\\', '/').Trim().Trim('/');
+        _currentlyAutosaving[uid] = (CalculateNextTime(), fileName);
         Log.Info($"Started autosaving map {path} ({uid}). Next save in {ReadableTimeLeft(uid)} seconds.");
     }
 
