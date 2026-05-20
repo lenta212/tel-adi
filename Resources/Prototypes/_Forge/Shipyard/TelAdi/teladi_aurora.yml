@@ -1,0 +1,33 @@
+- type: vessel
+  id: teladi_aurora
+  parent: BaseVessel
+  name: 'Tel-Adi Aurora'
+  description: Фрегат компании Tel-Adi для торговли и всего самого необходимого для прибыли.
+  price: 350000
+  category: Large
+  group: TelAdi
+  access: TelAdi
+  shuttlePath: /Maps/_Forge/Shuttles/TelAdi/aurora.yml
+  guidebookPage: Null
+  class:
+  - Frigate
+  - Cargo
+
+- type: gameMap
+  id: teladi_aurora
+  mapName: 'Tel-Adi Aurora'
+  mapPath: /Maps/_Forge/Shuttles/TelAdi/aurora.yml
+  minPlayers: 0
+  stations:
+    teladi_aurora:
+      stationProto: StandardFrontierVessel
+      components:
+        - type: StationNameSetup
+          mapNameTemplate: 'Tel-Adi Aurora {1}'
+          nameGenerator:
+            !type:NanotrasenNameGenerator
+            prefixCreator: '14'
+        - type: StationJobs
+          availableJobs:
+            Contractor: [ 0, 0 ]
+            Pilot: [ 0, 0 ]

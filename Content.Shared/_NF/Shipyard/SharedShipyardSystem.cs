@@ -34,6 +34,7 @@ public enum ShipyardConsoleUiKey : byte
     Empire, // Forge-Change
     Federation, // Forge-Change
     TelAdi, // Forge-Change
+    TelAdiAurora, // Forge-Change
 }
 
 public abstract class SharedShipyardSystem : EntitySystem
