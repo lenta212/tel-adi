@@ -1,7 +1,7 @@
 - type: vessel
   id: teladi_aurora
   parent: BaseVessel
-  name: 'Tel-Adi Aurora'
+  name: 'Tel-Adi billion'
   description: Фрегат компании Tel-Adi для торговли и всего самого необходимого для прибыли.
   price: 350000
   category: Large
@@ -15,7 +15,7 @@
 
 - type: gameMap
   id: teladi_aurora
-  mapName: 'Tel-Adi Aurora'
+  mapName: 'Tel-Adi billion'
   mapPath: /Maps/_Forge/Shuttles/TelAdi/aurora.yml
   minPlayers: 0
   stations:
@@ -23,7 +23,7 @@
       stationProto: StandardFrontierVessel
       components:
         - type: StationNameSetup
-          mapNameTemplate: 'Tel-Adi Aurora {1}'
+          mapNameTemplate: 'Tel-Adi billion {1}'
           nameGenerator:
             !type:NanotrasenNameGenerator
             prefixCreator: '14'
