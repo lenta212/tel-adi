@@ -1,0 +1,199 @@
+# Tel-Adi ARS — шлем
+- type: entity
+  parent: BaseClothingModsuitHelmet
+  id: ClothingModsuitHelmetTelAdi
+  name: шлем модкостюма Tel-Adi ARS
+  description: Фирменный шлем модкостюма корпорации Tel-Adi.
+  suffix: ТелАди
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: _Mono/Clothing/Head/Modsuits/tel-adi.rsi
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.90
+        Slash: 0.90
+        Piercing: 0.90
+        Heat: 0.90
+        Radiation: 0.50
+  - type: StaticPrice
+    price: 5000
+    vendPrice: 20000
+
+# Tel-Adi ARS — торс
+- type: entity
+  parent: ClothingModsuitChestplateBase
+  id: ClothingModsuitChestplateTelAdi
+  name: торс модкостюма Tel-Adi ARS
+  description: Фирменный торс модкостюма корпорации Tel-Adi.
+  suffix: ТелАди
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: _Mono/Clothing/OuterClothing/Modsuits/tel-adi.rsi
+  - type: Clothing
+    sprite: _Mono/Clothing/OuterClothing/Modsuits/tel-adi.rsi
+  - type: ClothingSpeedModifier
+    walkModifier: 1.10
+    sprintModifier: 1.10
+  - type: ExplosionResistance
+    damageCoefficient: 0.30
+  - type: FireProtection
+    reduction: 0.80
+  - type: StaminaDamageResistance
+    coefficient: 0.5
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.75
+        Slash: 0.75
+        Piercing: 0.75
+        Heat: 0.80
+        Caustic: 0.80
+        Shock: 0.60
+        Radiation: 1.0
+  - type: StaticPrice
+    price: 10000
+    vendPrice: 50000
+
+# Tel-Adi ARS — перчатки с инструментами
+- type: entity
+  parent: ClothingModsuitGauntletsBase
+  id: ClothingModsuitGauntletsTelAdi
+  name: перчатки модкостюма Tel-Adi ARS
+  description: Перчатки со встроенными инструментами — омнитулом и УРК.
+  suffix: ТелАди
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: _Mono/Clothing/Hands/Modsuits/tel-adi.rsi
+    layers:
+    - state: gauntlets
+    - state: gauntlets-sealed
+      visible: false
+      map: [ "sealed" ]
+  - type: SealableClothingVisuals
+    spriteLayer: sealed
+    clothingVisuals:
+      gloves:
+      - state: equipped-HAND-sealed
+      gloves-vox:
+      - state: equipped-HAND-sealed-vox
+  - type: ModsuitGauntletTools
+    urkProto: ShipRepairDeviceModsuitGauntlet
+    omnitoolProto: OmnitoolModsuitGauntlet
+  - type: ActionGrant
+    actions:
+    - ActionModsuitGauntletToolsMenu
+  - type: ItemActionGrant
+    actions:
+    - ActionModsuitGauntletToolsMenu
+    activeIfWorn: true
+  - type: StaticPrice
+    price: 5000
+    vendPrice: 20000
+
+# Tel-Adi ARS — ботинки с магнитками
+- type: entity
+  parent: ClothingModsuitBootsBase
+  id: ClothingModsuitBootsTelAdi
+  name: ботинки модкостюма Tel-Adi ARS
+  description: Фирменные ботинки модкостюма Tel-Adi со встроенными магнитами.
+  suffix: ТелАди
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: _Mono/Clothing/Shoes/Modsuits/tel-adi.rsi
+  - type: Magboots
+    requiresGrid: false
+    enabledPrefix: null
+  - type: NoSlip
+  - type: SealableClothingVisuals
+    spriteLayer: sealed
+    clothingVisuals:
+      shoes:
+      - state: equipped-FEET-sealed
+      shoes-vox:
+      - state: equipped-FEET-sealed-vox
+  - type: ClothingSlowOnDamageModifier
+    modifier: 0.75
+  - type: StaticPrice
+    price: 3000
+    vendPrice: 10000
+
+# Tel-Adi ARS — основной блок (спина)
+- type: entity
+  parent: ClothingModsuitBase
+  id: ClothingModsuitTelAdi
+  name: модкостюм Tel-Adi ARS
+  description: Фирменный модкостюм корпорации Tel-Adi с встроенным джетпаком, расширенным хранилищем и системой повышения мобильности.
+  suffix: ТелАди
+  components:
+  - type: Appearance
+  - type: Icon
+    sprite: _Mono/Clothing/Back/Modsuits/tel-adi.rsi
+    state: control
+  - type: Sprite
+    sprite: _Mono/Clothing/Back/Modsuits/tel-adi.rsi
+    layers:
+    - state: control
+    - state: control-sealed
+      visible: false
+      shader: unshaded
+      map: [ "sealed" ]
+  - type: Storage
+    grid:
+    - 0,0,7,4
+    maxItemSize: Huge
+  - type: Tag
+    tags:
+    - GasTank
+  - type: ActivatableUI
+    key: enum.SharedGasTankUiKey.Key
+    verbOnly: true
+  - type: UserInterface
+    interfaces:
+      enum.StorageUiKey.Key:
+        type: StorageBoundUserInterface
+      enum.ToggleClothingUiKey.Key:
+        type: ToggleableClothingBoundUserInterface
+      enum.SharedGasTankUiKey.Key:
+        type: GasTankBoundUserInterface
+  - type: GasTank
+    enableInternals: false
+    outputPressure: 21.3
+    air:
+      volume: 5
+      temperature: 293.15
+  - type: Jetpack
+    moleUsage: 0.00085
+  - type: ToggleableClothing
+    clothingPrototypes:
+      head: ClothingModsuitHelmetTelAdi
+      gloves: ClothingModsuitGauntletsTelAdi
+      outerClothing: ClothingModsuitChestplateTelAdi
+      shoes: ClothingModsuitBootsTelAdi
+  - type: SealableClothingVisuals
+    spriteLayer: sealed
+    clothingVisuals:
+      back:
+      - state: equipped-BACKPACK-sealed
+  - type: StaticPrice
+    price: 20000
+    vendPrice: 100000
+
+# Tel-Adi ARS с батарейкой
+- type: entity
+  parent: ClothingModsuitTelAdi
+  id: ClothingModsuitTelAdiPowerCell
+  suffix: ТелАди, Батарейка высокой ёмкости
+  components:
+  - type: ItemSlots
+    slots:
+      cell_slot:
+        name: power-cell-slot-component-slot-name-default
+        startingItem: PowerCellHigh
+        whitelist:
+          components:
+            - PowerCell
