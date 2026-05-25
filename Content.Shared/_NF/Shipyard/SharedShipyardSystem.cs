@@ -37,9 +37,9 @@ public enum ShipyardConsoleUiKey : byte
     TelAdiAurora, // Forge-Change
 }
 
-public abstract class SharedShipyardSystem : EntitySystem
+public abstract partial class SharedShipyardSystem : EntitySystem
 {
-    [Dependency] private readonly ItemSlotsSystem _itemSlotsSystem = default!;
+    [Dependency] private ItemSlotsSystem _itemSlotsSystem = default!;
 
     public override void Initialize()
     {

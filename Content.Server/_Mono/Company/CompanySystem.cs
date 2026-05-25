@@ -20,7 +20,7 @@ namespace Content.Server._Mono.Company;
 /// TODO: remove hardcoded slop.
 /// whoever hardcoded ts is getting slimed out no joke.
 /// </summary>
-public sealed class CompanySystem : EntitySystem
+public sealed partial class CompanySystem : EntitySystem
 {
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
     [Dependency] private readonly SharedIdCardSystem _idCardSystem = default!;
