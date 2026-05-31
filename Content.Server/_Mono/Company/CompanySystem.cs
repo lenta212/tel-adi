@@ -1,17 +1,15 @@
+using Content.Shared._Forge.Company;
 using Content.Shared._Mono.Company;
 using Content.Shared.Access.Components;
-using Content.Shared.Access;
 using Content.Shared.Access.Systems;
 using Content.Shared.GameTicking;
 using Content.Shared.Inventory;
 using Content.Shared.PDA;
 using Content.Shared.Roles;
 using Content.Shared.Roles.Jobs;
-using Content.Server.Database; // Forge-Change: company whitelist
-using System.Threading.Tasks; // Forge-Change: company whitelist
+using Robust.Shared.Timing;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
-using Robust.Shared.Containers;
 
 namespace Content.Server._Mono.Company;
 
@@ -22,11 +20,11 @@ namespace Content.Server._Mono.Company;
 /// </summary>
 public sealed partial class CompanySystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly SharedIdCardSystem _idCardSystem = default!;
-    [Dependency] private readonly InventorySystem _inventorySystem = default!;
-    [Dependency] private readonly CompanyManager _manager = default!;
-    [Dependency] private readonly SharedContainerSystem _containerSystem = default!;
+    [Dependency] private IPrototypeManager _prototypeManager = default!;
+    [Dependency] private SharedIdCardSystem _idCardSystem = default!;
+    [Dependency] private InventorySystem _inventorySystem = default!;
+    [Dependency] private CompanyManager _manager = default!;
+
 
     // Dictionary to store original company preferences for players
     private readonly Dictionary<string, string> _playerOriginalCompanies = new();
@@ -35,58 +33,42 @@ public sealed partial class CompanySystem : EntitySystem
     {
         base.Initialize();
 
+        // Subscribe to player spawn event to add the company component
         SubscribeLocalEvent<PlayerSpawnCompleteEvent>(OnPlayerSpawnComplete);
+
+        // Subscribe to player detached event to clean up stored preferences
         SubscribeLocalEvent<PlayerDetachedEvent>(OnPlayerDetached);
     }
 
     private void OnPlayerDetached(PlayerDetachedEvent args)
     {
+        // Clean up stored preferences when player disconnects
         _playerOriginalCompanies.Remove(args.Player.UserId.ToString());
     }
 
     private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent args)
     {
+        // Add the company component with the player's saved company
         var companyComp = EnsureComp<CompanyComponent>(args.Mob);
 
         var playerId = args.Player.UserId.ToString();
         var profileCompany = args.Profile.Company;
 
+        // Store the player's original company preference if not already stored
         if (!_playerOriginalCompanies.ContainsKey(playerId))
         {
             _playerOriginalCompanies[playerId] = profileCompany;
         }
 
-        var assigned = false;
-        if (args.JobId != null)
+        if (args.JobId != null && _prototypeManager.TryIndex<JobPrototype>(args.JobId, out var job))
         {
-            var job = _prototypeManager.Index<JobPrototype>(args.JobId);
-            companyComp.CompanyName = job.AssignedCompany;
-            assigned = companyComp.CompanyName != "None";
+            companyComp.CompanyName = FactionCompanyResolver.ResolveSpawnCompany(job, profileCompany);
         }
-        if (!assigned)
+        else
         {
-            bool loginFound = false;
-
-            if (string.IsNullOrEmpty(profileCompany))
-            {
-                foreach (var companyProto in _prototypeManager.EnumeratePrototypes<CompanyPrototype>())
-                {
-                    if (_manager.IsAllowed(args.Player, companyProto))
-                    {
-                        companyComp.CompanyName = companyProto.ID;
-                        loginFound = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!loginFound)
-            {
-                if (string.IsNullOrEmpty(profileCompany))
-                    profileCompany = "None";
-
-                companyComp.CompanyName = profileCompany;
-            }
+            companyComp.CompanyName = FactionCompanyResolver.IsFactionCompany(profileCompany)
+                ? "None"
+                : string.IsNullOrEmpty(profileCompany) ? "None" : profileCompany;
         }
 
         // Forge-change-start
@@ -99,144 +81,37 @@ public sealed partial class CompanySystem : EntitySystem
         }
         // Forge-change-end
 
+        // Ensure the component is networked to clients
         Dirty(args.Mob, companyComp);
 
-        UpdateIdCardCompany(args.Mob, companyComp.CompanyName);
+        // Update the player's ID card with the company information
+        var companyName = companyComp.CompanyName.ToString();
+        if (!UpdateIdCardCompany(args.Mob, companyName))
+        {
+            // Loadout gear may finish equipping after this event; retry next tick.
+            Timer.Spawn(TimeSpan.Zero, () => UpdateIdCardCompany(args.Mob, companyName));
+        }
     }
 
-    private void UpdateIdCardCompany(EntityUid playerEntity, string companyName)
+    /// <summary>
+    /// Updates the player's ID card with their company information
+    /// </summary>
+    private bool UpdateIdCardCompany(EntityUid playerEntity, string companyName)
     {
+        // Try to get the player's ID card
         if (!_inventorySystem.TryGetSlotEntity(playerEntity, "id", out var idUid))
-            return;
+            return false;
 
         var cardId = idUid.Value;
-        EntityUid? pdaUid = null;
 
-        // Check if it's a PDA
+        // Check if it's a PDA with an ID card inside
         if (TryComp<PdaComponent>(idUid, out var pdaComponent) && pdaComponent.ContainedId != null)
-        {
-            pdaUid = idUid.Value;
             cardId = pdaComponent.ContainedId.Value;
-        }
 
-        // Update company name on existing card
-        if (TryComp<IdCardComponent>(cardId, out var idCard))
-        {
-            _idCardSystem.TryChangeCompanyName(cardId, companyName, idCard);
-        }
+        // Update the ID card with company information
+        if (!TryComp<IdCardComponent>(cardId, out var idCard))
+            return false;
 
-        if (companyName == "TelAdi")
-        {
-            if (pdaUid != null)
-            {
-                ReplacePdaWithTelAdi(playerEntity, pdaUid.Value, cardId);
-            }
-            else
-            {
-                SpawnTelAdiPdaWithCard(playerEntity, cardId);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Replaces the player's existing PDA with TelAdiPDA,
-    /// applying name/job/access to the card that's already inside it.
-    /// </summary>
-    private void ReplacePdaWithTelAdi(EntityUid playerEntity, EntityUid oldPdaUid, EntityUid oldCardId)
-    {
-        // Read data from old card
-        string? fullName = null;
-        string? jobTitle = null;
-
-        if (TryComp<IdCardComponent>(oldCardId, out var oldCard))
-        {
-            fullName = oldCard.FullName;
-            jobTitle = oldCard.LocalizedJobTitle;
-        }
-
-        // Copy old access tags
-        HashSet<ProtoId<AccessLevelPrototype>> oldTags = new();
-        if (TryComp<AccessComponent>(oldCardId, out var oldAccess))
-            oldTags = new HashSet<ProtoId<AccessLevelPrototype>>(oldAccess.Tags);
-
-        // Unequip old PDA and delete it (and its card)
-        _inventorySystem.TryUnequip(playerEntity, "id", force: true);
-        QueueDel(oldCardId);
-        QueueDel(oldPdaUid);
-
-        // Spawn new TelAdi PDA — card already exists inside from the prototype
-        var newPda = Spawn("TelAdiPDA", Transform(playerEntity).Coordinates);
-
-        // Apply data to the card that already exists inside the new PDA
-        if (TryComp<PdaComponent>(newPda, out var newPdaComp) && newPdaComp.ContainedId != null)
-        {
-            ApplyCardData(newPdaComp.ContainedId.Value, fullName, jobTitle, oldTags);
-        }
-
-        // Equip new PDA
-        _inventorySystem.TryEquip(playerEntity, newPda, "id", force: true);
-    }
-
-    /// <summary>
-    /// Spawns a fresh TelAdiPDA when the player had no PDA (bare card),
-    /// applying name/job/access to the card already inside it.
-    /// </summary>
-    private void SpawnTelAdiPdaWithCard(EntityUid playerEntity, EntityUid oldCardId)
-    {
-        // Read data from old card
-        string? fullName = null;
-        string? jobTitle = null;
-
-        if (TryComp<IdCardComponent>(oldCardId, out var oldCard))
-        {
-            fullName = oldCard.FullName;
-            jobTitle = oldCard.LocalizedJobTitle;
-        }
-
-        // Copy old access tags
-        HashSet<ProtoId<AccessLevelPrototype>> oldTags = new();
-        if (TryComp<AccessComponent>(oldCardId, out var oldAccess))
-            oldTags = new HashSet<ProtoId<AccessLevelPrototype>>(oldAccess.Tags);
-
-        // Unequip and delete old bare card
-        _inventorySystem.TryUnequip(playerEntity, "id", force: true);
-        QueueDel(oldCardId);
-
-        // Spawn new TelAdi PDA — card already exists inside from the prototype
-        var newPda = Spawn("TelAdiPDA", Transform(playerEntity).Coordinates);
-
-        // Apply data to the card that already exists inside the new PDA
-        if (TryComp<PdaComponent>(newPda, out var newPdaComp) && newPdaComp.ContainedId != null)
-        {
-            ApplyCardData(newPdaComp.ContainedId.Value, fullName, jobTitle, oldTags);
-        }
-
-        // Equip new PDA
-        _inventorySystem.TryEquip(playerEntity, newPda, "id", force: true);
-    }
-
-    /// <summary>
-    /// Applies name, job title, company name, and access tags (+ TelAdi) to a card entity.
-    /// </summary>
-    private void ApplyCardData(
-        EntityUid cardUid,
-        string? fullName,
-        string? jobTitle,
-        HashSet<ProtoId<AccessLevelPrototype>> extraTags)
-    {
-        if (TryComp<IdCardComponent>(cardUid, out var idCard))
-        {
-            _idCardSystem.TryChangeFullName(cardUid, fullName, idCard);
-            _idCardSystem.TryChangeJobTitle(cardUid, jobTitle, idCard);
-            _idCardSystem.TryChangeCompanyName(cardUid, "TelAdi", idCard);
-        }
-
-        if (TryComp<AccessComponent>(cardUid, out var access))
-        {
-            foreach (var tag in extraTags)
-                access.Tags.Add(tag);
-            access.Tags.Add("TelAdi");
-            Dirty(cardUid, access);
-        }
+        return _idCardSystem.TryChangeCompanyName(cardId, companyName, idCard);
     }
 }

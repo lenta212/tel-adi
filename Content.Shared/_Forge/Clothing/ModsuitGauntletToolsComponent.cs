@@ -18,6 +18,12 @@ public sealed partial class ModsuitGauntletToolsComponent : Component
     [DataField, AutoNetworkedField]
     public EntProtoId NaniteApplicatorProto = "NaniteApplicatorExperimental";
 
+    /// <summary>
+    /// Optional fifth integrated tool (e.g. Drake hardsuits — grappling gun).
+    /// </summary>
+    [DataField, AutoNetworkedField]
+    public EntProtoId AuxiliaryProto = "WeaponGrapplingGun";
+
     [DataField, AutoNetworkedField]
     public EntityUid? UrkEntity;
 
@@ -31,6 +37,9 @@ public sealed partial class ModsuitGauntletToolsComponent : Component
     public EntityUid? NaniteApplicatorEntity;
 
     [DataField, AutoNetworkedField]
+    public EntityUid? AuxiliaryEntity;
+
+    [DataField, AutoNetworkedField]
     public bool UrkInHand;
 
     [DataField, AutoNetworkedField]
@@ -42,35 +51,20 @@ public sealed partial class ModsuitGauntletToolsComponent : Component
     [DataField, AutoNetworkedField]
     public bool NaniteApplicatorInHand;
 
-    // Forge-change-start: extra Tel-Adi gauntlet tools.
-    // Nullable so gauntlets that don't configure them (e.g. Omnissia) never spawn these.
     [DataField, AutoNetworkedField]
-    public EntProtoId? RcdProto;
+    public bool AuxiliaryInHand;
 
+    /// <summary>
+    /// Which integrated tool slots are available. Omnissia gauntlets use the default (all four).
+    /// </summary>
     [DataField, AutoNetworkedField]
-    public EntProtoId? MultitoolProto;
+    public ModsuitGauntletEnabledSlots EnabledSlots = ModsuitGauntletEnabledSlots.All;
 
-    [DataField, AutoNetworkedField]
-    public EntProtoId? SprayNozzleProto;
-
-    [DataField, AutoNetworkedField]
-    public EntityUid? RcdEntity;
-
-    [DataField, AutoNetworkedField]
-    public EntityUid? MultitoolEntity;
-
-    [DataField, AutoNetworkedField]
-    public EntityUid? SprayNozzleEntity;
-
-    [DataField, AutoNetworkedField]
-    public bool RcdInHand;
-
-    [DataField, AutoNetworkedField]
-    public bool MultitoolInHand;
-
-    [DataField, AutoNetworkedField]
-    public bool SprayNozzleInHand;
-    // Forge-change-end
+    /// <summary>
+    /// Radial menu uses each tool prototype icon instead of fixed Omnissia artwork.
+    /// </summary>
+    [DataField]
+    public bool UsePrototypeMenuIcons;
 }
 
 [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(raiseAfterAutoHandleState: true)]
