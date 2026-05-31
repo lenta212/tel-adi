@@ -1,0 +1,55 @@
+# Tel-Adi ARS research — disk-gated discipline + technology.
+# The discipline is not supported by R&D servers by default; inserting
+# DisciplinesDiskTelAdi adds it, which makes this branch researchable.
+
+- type: techDiscipline
+  id: TelAdi
+  name: research-discipline-tel-adi
+  color: "#FF0000"
+  icon:
+    sprite: Forge/Interface/Misc/company_icons.rsi
+    state: tel_adi
+  tierPrerequisites:
+    1: 0
+    2: 0.5
+    3: 0.5
+  uiName: Tel-Adi
+
+- type: technology
+  id: TelAdiOreProcessorIndustrial
+  name: research-technology-teladi-ore-processor-industrial
+  entityIcon: OreProcessorIndustrialHeavy
+  discipline: TelAdi
+  tier: 1
+  cost: 50000
+  recipeUnlocks:
+  - OreProcessorIndustrialHeavyMachineCircuitboard
+  technologyPrerequisites:
+  - SalvageEquipment
+  position: -2, 3
+
+- type: technology
+  id: ARSTelAdiModsuit
+  name: research-technology-ars-teladi-modsuit
+  entityIcon: ClothingModsuitTelAdi
+  discipline: TelAdi
+  tier: 1
+  cost: 100000
+  recipeUnlocks:
+  - ARSTelAdiModsuit
+  technologyPrerequisites:
+  - ARSOmnissiaModsuit
+  position: 6, 7 # Forge-change: next to ARSOmnissiaModsuit (4, 7)
+
+- type: technology
+  id: ARSTelAdiModsuitMk2
+  name: research-technology-ars-teladi-modsuit-mk2
+  entityIcon: ClothingModsuitTelAdiMk2
+  discipline: TelAdi
+  tier: 2
+  cost: 200000
+  recipeUnlocks:
+  - ARSTelAdiModsuitMk2
+  technologyPrerequisites:
+  - ARSTelAdiModsuit
+  position: 6, 9

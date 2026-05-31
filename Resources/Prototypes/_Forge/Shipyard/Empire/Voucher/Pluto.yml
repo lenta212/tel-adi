@@ -3,7 +3,7 @@
 - type: vessel
   id: Pluto
   parent: BaseVessel
-  name: CWH Нептун
+  name: 'CWH Нептун'
   description: В космосе нет морей, но морской царь все еще опасен
   purchasable: false
   limit: 1

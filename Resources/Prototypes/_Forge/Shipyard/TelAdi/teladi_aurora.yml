@@ -2,7 +2,7 @@
   id: teladi_aurora
   parent: BaseVessel
   name: 'Tel-Adi billion'
-  description: Фрегат компании Tel-Adi для торговли и всего самого необходимого для прибыли.
+  description: Флагман Tel-Adi. Торговля, добыча, переговоры — всё под одной крышей. Прибыль — не цель, прибыль — вера.
   price: 350000
   category: Large
   group: TelAdi

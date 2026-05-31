@@ -40,6 +40,14 @@ public sealed partial class ModsuitGauntletToolsSystem : SharedModsuitGauntletTo
         EnsureGauntletTool(ent, ent.Comp.OmnitoolProto, ref ent.Comp.OmnitoolEntity);
         EnsureGauntletTool(ent, ent.Comp.WelderProto, ref ent.Comp.WelderEntity);
         EnsureGauntletTool(ent, ent.Comp.NaniteApplicatorProto, ref ent.Comp.NaniteApplicatorEntity);
+        // Forge-change-start: optional tools only spawn when the proto is configured.
+        if (ent.Comp.RcdProto is { } rcdProto)
+            EnsureGauntletTool(ent, rcdProto, ref ent.Comp.RcdEntity);
+        if (ent.Comp.MultitoolProto is { } multitoolProto)
+            EnsureGauntletTool(ent, multitoolProto, ref ent.Comp.MultitoolEntity);
+        if (ent.Comp.SprayNozzleProto is { } sprayNozzleProto)
+            EnsureGauntletTool(ent, sprayNozzleProto, ref ent.Comp.SprayNozzleEntity);
+        // Forge-change-end
         Dirty(ent);
     }
 
@@ -67,5 +75,16 @@ public sealed partial class ModsuitGauntletToolsSystem : SharedModsuitGauntletTo
 
         if (ent.Comp.NaniteApplicatorEntity != null)
             QueueDel(ent.Comp.NaniteApplicatorEntity);
+
+        // Forge-change-start
+        if (ent.Comp.RcdEntity != null)
+            QueueDel(ent.Comp.RcdEntity);
+
+        if (ent.Comp.MultitoolEntity != null)
+            QueueDel(ent.Comp.MultitoolEntity);
+
+        if (ent.Comp.SprayNozzleEntity != null)
+            QueueDel(ent.Comp.SprayNozzleEntity);
+        // Forge-change-end
     }
 }

@@ -6,6 +6,11 @@
     ClothingNeckCloakTelAdiCap: 5
     ClothingUniformJumpsuitTelAdi: 5
     ClothingShoesBootsTelAdi: 3
+    DisciplinesDiskTelAdi: 1
+    ClothingUniformJumpsuitMoonlight: 5
+    ClothingShoesBootsMoonlight: 5
+    ClothingHandsGlovesMoonlight: 5
+    ClothingMaskGasMoonlight: 3
 
 # Настенный вендомат Tel-Adi
 - type: entity

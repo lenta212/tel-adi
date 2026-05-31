@@ -41,6 +41,36 @@ public sealed partial class ModsuitGauntletToolsComponent : Component
 
     [DataField, AutoNetworkedField]
     public bool NaniteApplicatorInHand;
+
+    // Forge-change-start: extra Tel-Adi gauntlet tools.
+    // Nullable so gauntlets that don't configure them (e.g. Omnissia) never spawn these.
+    [DataField, AutoNetworkedField]
+    public EntProtoId? RcdProto;
+
+    [DataField, AutoNetworkedField]
+    public EntProtoId? MultitoolProto;
+
+    [DataField, AutoNetworkedField]
+    public EntProtoId? SprayNozzleProto;
+
+    [DataField, AutoNetworkedField]
+    public EntityUid? RcdEntity;
+
+    [DataField, AutoNetworkedField]
+    public EntityUid? MultitoolEntity;
+
+    [DataField, AutoNetworkedField]
+    public EntityUid? SprayNozzleEntity;
+
+    [DataField, AutoNetworkedField]
+    public bool RcdInHand;
+
+    [DataField, AutoNetworkedField]
+    public bool MultitoolInHand;
+
+    [DataField, AutoNetworkedField]
+    public bool SprayNozzleInHand;
+    // Forge-change-end
 }
 
 [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(raiseAfterAutoHandleState: true)]

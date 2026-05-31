@@ -1,1 +1,5 @@
 research-technology-ars-omnissia-modsuit = Продвинутый ремонтный костюм
+research-technology-ars-teladi-modsuit = Продвинутый ремонтный костюм Tel-Adi ARS
+research-technology-ars-teladi-modsuit-mk2 = Продвинутый ремонтный костюм Tel-Adi ARS Mk.II
+research-discipline-tel-adi = Дисциплина Tel-Adi
+research-technology-teladi-ore-processor-industrial = Промышленный переработчик Tel-Adi

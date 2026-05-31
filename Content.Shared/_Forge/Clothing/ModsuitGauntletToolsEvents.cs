@@ -10,6 +10,10 @@ public enum ModsuitGauntletToolSlot : byte
     Omnitool,
     Welder,
     NaniteApplicator,
+    // Forge-change: extra Tel-Adi gauntlet tools.
+    Rcd,
+    Multitool,
+    SprayNozzle,
 }
 
 [Serializable, NetSerializable]

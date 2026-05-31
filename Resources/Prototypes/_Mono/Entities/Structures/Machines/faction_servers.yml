@@ -171,6 +171,7 @@
     - HME # Forge-change
     - Nanotrasen # Forge-change
     - ForgeBoardingTeleportExperimental
+    - TelAdi # Forge-change
 
 - type: entity
   parent: ResearchAndDevelopmentServer

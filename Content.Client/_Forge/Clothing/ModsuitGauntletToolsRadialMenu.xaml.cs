@@ -54,6 +54,17 @@ public sealed partial class ModsuitGauntletToolsRadialMenu : RadialMenu
         if (!comp.NaniteApplicatorInHand)
             AddToolButton(main, ModsuitGauntletToolSlot.NaniteApplicator, comp.NaniteApplicatorProto);
 
+        // Forge-change-start: optional tools only appear when configured (icon falls back to the tool's own sprite).
+        if (comp.RcdProto is { } rcdProto && !comp.RcdInHand)
+            AddToolButton(main, ModsuitGauntletToolSlot.Rcd, rcdProto);
+
+        if (comp.MultitoolProto is { } multitoolProto && !comp.MultitoolInHand)
+            AddToolButton(main, ModsuitGauntletToolSlot.Multitool, multitoolProto);
+
+        if (comp.SprayNozzleProto is { } sprayNozzleProto && !comp.SprayNozzleInHand)
+            AddToolButton(main, ModsuitGauntletToolSlot.SprayNozzle, sprayNozzleProto);
+        // Forge-change-end
+
         if (TryGetActiveSlot(comp, out var activeSlot))
             AddStowButton(main, activeSlot);
 
@@ -115,6 +126,26 @@ public sealed partial class ModsuitGauntletToolsRadialMenu : RadialMenu
             slot = ModsuitGauntletToolSlot.NaniteApplicator;
             return true;
         }
+
+        // Forge-change-start
+        if (comp.RcdInHand)
+        {
+            slot = ModsuitGauntletToolSlot.Rcd;
+            return true;
+        }
+
+        if (comp.MultitoolInHand)
+        {
+            slot = ModsuitGauntletToolSlot.Multitool;
+            return true;
+        }
+
+        if (comp.SprayNozzleInHand)
+        {
+            slot = ModsuitGauntletToolSlot.SprayNozzle;
+            return true;
+        }
+        // Forge-change-end
 
         slot = default;
         return false;

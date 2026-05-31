@@ -25,6 +25,14 @@
     sprite: Clothing/Neck/Cloaks/tel-adi_cap.rsi
   - type: Clothing
     sprite: Clothing/Neck/Cloaks/tel-adi_cap.rsi
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: inhand-left
+        sprite: Clothing/Neck/Cloaks/tel-adi_cap.rsi
+      right:
+      - state: inhand-right
+        sprite: Clothing/Neck/Cloaks/tel-adi_cap.rsi
   - type: StaticPrice
     price: 100
 
@@ -40,23 +48,42 @@
     sprite: Forge/Clothing/Uniforms/Jumpsuits/tel-adi.rsi
   - type: Clothing
     sprite: Forge/Clothing/Uniforms/Jumpsuits/tel-adi.rsi
+  - type: Item
+    inhandVisuals:
+      left:
+      - state: inhand-left
+        sprite: Forge/Clothing/Uniforms/Jumpsuits/tel-adi.rsi
+      right:
+      - state: inhand-right
+        sprite: Forge/Clothing/Uniforms/Jumpsuits/tel-adi.rsi
   - type: StaticPrice
     price: 100
 
-# Скороходы Tel-Adi
+# Скороходы Tel-Adi — на батарейке, +10% при активации
 - type: entity
-  parent: ClothingShoesBase
+  parent: [ClothingShoesBase, PowerCellSlotSmallItem, BaseToggleClothing]
   id: ClothingShoesBootsTelAdi
   name: скороходы Tel-Adi
-  description: Высокотехнологичная обувь корпорации Tel-Adi. Увеличивает скорость передвижения на 20%. Стоит каждого кредита.
+  description: Высокотехнологичная обувь корпорации Tel-Adi. При активации ускоряет передвижение на 10%, расходуя заряд батареи.
   suffix: ТелАди
   components:
   - type: Sprite
     sprite: Forge/Clothing/Shoes/Boots/tel-adi.rsi
   - type: Clothing
     sprite: Forge/Clothing/Shoes/Boots/tel-adi.rsi
-  - type: ClothingSpeedModifier
-    walkModifier: 1.20
-    sprintModifier: 1.20
+  - type: ToggleClothing
+    action: ActionToggleSpeedBoots
+  - type: ClothingSpeedModifier # only applies while toggled on (ItemToggle)
+    walkModifier: 1.10
+    sprintModifier: 1.10
+  - type: Appearance
+  - type: PowerCellDraw # Forge-change: drains a power cell while active
+    drawRate: 3
+  - type: ToggleCellDraw
+  - type: ItemSlots
+    slots:
+      cell_slot:
+        name: power-cell-slot-component-slot-name-default
+        startingItem: PowerCellSmall
   - type: StaticPrice
     price: 5000

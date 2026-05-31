@@ -3,15 +3,9 @@ meta:
   category: Grid
   engineVersion: 277.0.0
   forkId: frontier_mapping
-<<<<<<< HEAD
   forkVersion: f7931f11d58553ce10822d5355f3e18ff110d52e
   time: 04/26/2026 13:29:49
   entityCount: 7018
-=======
-  forkVersion: 6c0f4aa2e43e0512a2de709cb4968d2ba2f896b0
-  time: 05/23/2026 11:05:45
-  entityCount: 7012
->>>>>>> upstream/main
 maps: []
 grids:
 - 1
@@ -3993,10 +3987,6 @@ entities:
     - type: CloakHeat
       lastUpdateTime: 0
     - type: NavMap
-<<<<<<< HEAD
-=======
-    - type: ShipShieldGridState
->>>>>>> upstream/main
 - proto: AirAlarm
   entities:
   - uid: 2

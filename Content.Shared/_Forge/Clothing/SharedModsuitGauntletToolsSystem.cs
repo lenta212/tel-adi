@@ -51,6 +51,17 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
             case ModsuitGauntletToolSlot.NaniteApplicator:
                 ToggleTool(gauntlets, wearer, gauntlets.Comp.NaniteApplicatorEntity, ref gauntlets.Comp.NaniteApplicatorInHand);
                 break;
+            // Forge-change-start
+            case ModsuitGauntletToolSlot.Rcd:
+                ToggleTool(gauntlets, wearer, gauntlets.Comp.RcdEntity, ref gauntlets.Comp.RcdInHand);
+                break;
+            case ModsuitGauntletToolSlot.Multitool:
+                ToggleTool(gauntlets, wearer, gauntlets.Comp.MultitoolEntity, ref gauntlets.Comp.MultitoolInHand);
+                break;
+            case ModsuitGauntletToolSlot.SprayNozzle:
+                ToggleTool(gauntlets, wearer, gauntlets.Comp.SprayNozzleEntity, ref gauntlets.Comp.SprayNozzleInHand);
+                break;
+            // Forge-change-end
         }
     }
 
@@ -80,6 +91,26 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
             return true;
         }
 
+        // Forge-change-start
+        if (comp.RcdInHand)
+        {
+            slot = ModsuitGauntletToolSlot.Rcd;
+            return true;
+        }
+
+        if (comp.MultitoolInHand)
+        {
+            slot = ModsuitGauntletToolSlot.Multitool;
+            return true;
+        }
+
+        if (comp.SprayNozzleInHand)
+        {
+            slot = ModsuitGauntletToolSlot.SprayNozzle;
+            return true;
+        }
+        // Forge-change-end
+
         slot = default;
         return false;
     }
@@ -92,6 +123,11 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
             ModsuitGauntletToolSlot.Omnitool => comp.OmnitoolInHand,
             ModsuitGauntletToolSlot.Welder => comp.WelderInHand,
             ModsuitGauntletToolSlot.NaniteApplicator => comp.NaniteApplicatorInHand,
+            // Forge-change-start
+            ModsuitGauntletToolSlot.Rcd => comp.RcdInHand,
+            ModsuitGauntletToolSlot.Multitool => comp.MultitoolInHand,
+            ModsuitGauntletToolSlot.SprayNozzle => comp.SprayNozzleInHand,
+            // Forge-change-end
             _ => false,
         };
     }
@@ -143,6 +179,11 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
         StowIfHeld(gauntlets, wearer, activeTool, comp.OmnitoolEntity, ref comp.OmnitoolInHand);
         StowIfHeld(gauntlets, wearer, activeTool, comp.WelderEntity, ref comp.WelderInHand);
         StowIfHeld(gauntlets, wearer, activeTool, comp.NaniteApplicatorEntity, ref comp.NaniteApplicatorInHand);
+        // Forge-change-start
+        StowIfHeld(gauntlets, wearer, activeTool, comp.RcdEntity, ref comp.RcdInHand);
+        StowIfHeld(gauntlets, wearer, activeTool, comp.MultitoolEntity, ref comp.MultitoolInHand);
+        StowIfHeld(gauntlets, wearer, activeTool, comp.SprayNozzleEntity, ref comp.SprayNozzleInHand);
+        // Forge-change-end
     }
 
     private void StowIfHeld(
@@ -267,6 +308,11 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
             comp.OmnitoolInHand = false;
             comp.WelderInHand = false;
             comp.NaniteApplicatorInHand = false;
+            // Forge-change-start
+            comp.RcdInHand = false;
+            comp.MultitoolInHand = false;
+            comp.SprayNozzleInHand = false;
+            // Forge-change-end
             return;
         }
 
@@ -274,6 +320,11 @@ public abstract partial class SharedModsuitGauntletToolsSystem : EntitySystem
         comp.OmnitoolInHand = IsHeld(wearer.Value, comp.OmnitoolEntity);
         comp.WelderInHand = IsHeld(wearer.Value, comp.WelderEntity);
         comp.NaniteApplicatorInHand = IsHeld(wearer.Value, comp.NaniteApplicatorEntity);
+        // Forge-change-start
+        comp.RcdInHand = IsHeld(wearer.Value, comp.RcdEntity);
+        comp.MultitoolInHand = IsHeld(wearer.Value, comp.MultitoolEntity);
+        comp.SprayNozzleInHand = IsHeld(wearer.Value, comp.SprayNozzleEntity);
+        // Forge-change-end
     }
 
     private bool IsHeld(EntityUid wearer, EntityUid? tool)
