@@ -9,10 +9,12 @@
   - type: MachineBoard
     prototype: OreProcessorIndustrialHeavy
     requirements:
-      MatterBin: 1
+      MatterBin: 8
       Manipulator: 4
     stackRequirements:
-      Glass: 2
+      Steel: 5
+      Glass: 5
+      Gold: 2
 
 - type: entity
   id: TraumaTechFabCircuitboard

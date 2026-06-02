@@ -1,0 +1,13 @@
+# Действие возврата в собственное тело из оболочки Душегуба
+- type: entity
+  id: ActionSoulkillerReturnToBody
+  name: Вернуться в тело
+  description: Покинуть оболочку Душегуба и вернуть сознание в собственное тело.
+  components:
+  - type: InstantAction
+    priority: -10
+    itemIconStyle: BigAction
+    icon:
+      sprite: Interface/Actions/actions_ai.rsi
+      state: ai_core
+    event: !type:SoulkillerReturnToBodyEvent

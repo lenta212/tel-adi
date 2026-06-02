@@ -16,6 +16,19 @@
   uiName: Tel-Adi
 
 - type: technology
+  id: TelAdiCentrifuge
+  name: research-technology-teladi-centrifuge
+  entityIcon: TelAdiUraniumCentrifuge
+  discipline: TelAdi
+  tier: 1
+  cost: 40000
+  recipeUnlocks:
+  - TelAdiUraniumCentrifugeMachineCircuitboard
+  technologyPrerequisites:
+  - BasicProcessing
+  position: 11, 1
+
+- type: technology
   id: TelAdiOreProcessorIndustrial
   name: research-technology-teladi-ore-processor-industrial
   entityIcon: OreProcessorIndustrialHeavy
@@ -27,6 +40,19 @@
   technologyPrerequisites:
   - SalvageEquipment
   position: -2, 3
+
+- type: technology
+  id: TelAdiScrapProcessor
+  name: research-technology-teladi-scrap-processor
+  entityIcon: TelAdiScrapProcessor
+  discipline: TelAdi
+  tier: 1
+  cost: 45000
+  recipeUnlocks:
+  - TelAdiScrapProcessorMachineCircuitboard
+  technologyPrerequisites:
+  - SalvageEquipment
+  position: -3, 3
 
 - type: technology
   id: ARSTelAdiModsuit

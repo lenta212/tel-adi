@@ -1,0 +1,43 @@
+# ══════════════════════════════════════════════════════════
+# Коннектор КПБ — настенное устройство для подключения к Душегубу.
+# Через alt-клик (verb «Подключиться») оператор переносит сознание
+# в ближайшую свободную оболочку Душегуба. Текстура временная (вендомат Tel-Adi).
+# ══════════════════════════════════════════════════════════
+
+- type: entity
+  parent: [BaseStructure, BaseStructureDisableToolUse]
+  id: SoulkillerConnector
+  name: коннектор КПБ
+  description: Настенное устройство корпорации Tel-Adi. Позволяет оператору перенести сознание в тело-оболочку (Душегуб) и вернуться обратно. Физическое тело оператора во время переноса остаётся в режиме ожидания.
+  suffix: ТелАди
+  components:
+  - type: Transform
+    anchored: true
+  - type: Sprite
+    # Временный спрайт — использует вендомат Tel-Adi
+    sprite: _Mono/Structures/Machines/VendingMachines/teladi_vend.rsi
+    layers:
+    - state: "off"
+      map: ["enum.VendingMachineVisualLayers.Base"]
+    - state: "normal-unshaded"
+      map: ["enum.VendingMachineVisualLayers.BaseUnshaded"]
+      shader: unshaded
+  - type: Appearance
+  - type: Physics
+    bodyType: Static
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.25,-0.4,0.25,0.4"
+        density: 100
+        mask:
+        - MachineMask
+        layer:
+        - MachineLayer
+  - type: ApcPowerReceiver
+    powerLoad: 50  # минимальное потребление
+  - type: AccessReader
+    requiredCompany: TelAdi
+  - type: SoulkillerConnector

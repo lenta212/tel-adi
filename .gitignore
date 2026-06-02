@@ -313,3 +313,13 @@ Resources/MapImages
 # Link Files
 *.lnk
 
+# ── Tel-Adi local working / source-texture folders (NOT for the repo) ──
+/Иконка компании/
+/Имплант/
+/Новая папка/
+/Новая папка (2)/
+/Новая папка (5)/
+/Ядро ии/
+/перераб лома(покадровая анимка+иконка+щит)/
+/Tel-Adi_Справочник.txt
+

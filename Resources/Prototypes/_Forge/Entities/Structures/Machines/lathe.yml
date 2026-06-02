@@ -61,9 +61,8 @@
   - type: Machine
     board: OreProcessorIndustrialHeavyMachineCircuitboard
   - type: Lathe
-    materialUseMultiplier: 0.7        # сток: 70% руды
-    timeMultiplier: 0.25              # в 4× быстрее
-    partRatingMaterialUseMultiplier: 0.883  # BS + Hyper → ~0.30
+    materialUseMultiplier: 0.5   # как Drake Mk2
+    timeMultiplier: 0.25         # как Drake Mk2
     staticPacks:
     - OreSmelting
     - RGlassSmelting

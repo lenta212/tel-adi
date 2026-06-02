@@ -364,6 +364,16 @@
 
 - type: latheRecipe
   parent: BaseGoldCircuitboardRecipe
+  id: TelAdiUraniumCentrifugeMachineCircuitboard
+  result: TelAdiUraniumCentrifugeMachineCircuitboard
+
+- type: latheRecipe
+  parent: BaseGoldCircuitboardRecipe
+  id: TelAdiScrapProcessorMachineCircuitboard
+  result: TelAdiScrapProcessorMachineCircuitboard
+
+- type: latheRecipe
+  parent: BaseGoldCircuitboardRecipe
   id: SalvageMagnetMachineCircuitboard
   result: SalvageMagnetMachineCircuitboard
 

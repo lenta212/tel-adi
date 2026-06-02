@@ -1,0 +1,123 @@
+# ══════════════════════════════════════════════════════════
+# Душегуб — ядро станционного ИИ Tel-Adi (КПБ) для переноса сознания.
+# Полноценный ИИ (камеры, глаз, прыжок к ядру), НО БЕЗ ЗАКОНОВ.
+# Пустое ядро пока оператор не подключится через SoulkillerConnector.
+# ══════════════════════════════════════════════════════════
+
+# Мозг Душегуба — как станционный ИИ, но без законов (нет SiliconLaw*).
+- type: entity
+  parent: PositronicBrain
+  id: SoulkillerBrain
+  categories: [ HideSpawnMenu, DoNotMap ]
+  components:
+  - type: Sprite
+    visible: false
+  - type: ComplexInteraction
+
+# Компоненты, навешиваемые на мозг при вставке в ядро Душегуба.
+# Копия AiHeld, но с фирменными иконками экшенов Tel-Adi и без законов.
+- type: entity
+  id: SoulkillerHeld
+  description: Components added to a mind inserted into a Soulkiller core.
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: IntrinsicRadioReceiver
+  - type: IntrinsicRadioTransmitter
+    channels:
+    - Common
+    - Command
+    - Engineering
+    - Medical
+    - Science
+    - Security
+    - Service
+    - Supply
+  - type: ActiveRadio
+    channels:
+    - Common
+    - Command
+    - Engineering
+    - Medical
+    - Science
+    - Security
+    - Service
+    - Supply
+  - type: CollectiveMind
+    channels:
+    - Binary
+    defaultChannel: Binary
+  - type: IgnoreUIRange
+  - type: StationAiHeld
+  - type: StationAiOverlay
+  - type: ShowElectrocutionHUD
+  - type: ActionGrant
+    actions:
+    - ActionSoulkillerJumpToCore
+    - ActionSoulkillerCameraLights
+    - ActionOpenRemoteDevicesMenu
+  - type: UserInterface
+    interfaces:
+      enum.RadarConsoleUiKey.Key:
+        type: RadarConsoleBoundUserInterface
+      enum.CrewMonitoringUIKey.Key:
+        type: CrewMonitoringBoundUserInterface
+      enum.GeneralStationRecordConsoleKey.Key:
+        type: GeneralStationRecordConsoleBoundUserInterface
+      enum.CommunicationsConsoleUiKey.Key:
+        type: CommunicationsConsoleBoundUserInterface
+      enum.RemoteDeviceUiKey.Key:
+        type: RemoteDevicesBoundUserInterface
+  - type: IntrinsicUI
+    uis:
+      enum.RadarConsoleUiKey.Key:
+        toggleAction: ActionSoulkillerRadar
+      enum.CrewMonitoringUIKey.Key:
+        toggleAction: ActionSoulkillerCrewMonitoring
+      enum.GeneralStationRecordConsoleKey.Key:
+        toggleAction: ActionSoulkillerStationRecords
+      enum.CommunicationsConsoleUiKey.Key:
+        toggleAction: ActionSoulkillerCommunications
+  - type: CrewMonitoringConsole
+  - type: GeneralStationRecordConsole
+  - type: DeviceNetwork
+    deviceNetId: Wireless
+    receiveFrequencyId: CrewMonitor
+    transmitFrequencyId: ShuttleTimer
+  - type: RadarConsole
+    followEntity: false
+  - type: CommunicationsConsole
+    canShuttle: false
+    title: comms-console-announcement-title-station-ai
+    color: "#5ed7aa"
+  - type: HolographicAvatar
+    layerData:
+    - sprite: Forge/Mobs/Silicon/soulkiller_core.rsi
+      state: default
+  - type: ShowJobIcons
+  - type: AdvancedPilot
+
+- type: entity
+  parent: PlayerStationAiEmpty
+  id: MobSoulkiller
+  name: душегуб
+  description: Автономное ядро искусственного интеллекта корпорации Tel-Adi. Через коннектор КПБ сознание оператора может быть временно перенесено в этот корпус.
+  suffix: ТелАди
+  components:
+  - type: Soulkiller
+    brainProto: SoulkillerBrain
+  # Свой набор «held»-компонентов: фирменные иконки экшенов, без законов.
+  - type: ContainerComp
+    proto: SoulkillerHeld
+    container: station_ai_mind_slot
+  # Новая текстура ядра Tel-Adi.
+  - type: Sprite
+    sprite: Forge/Mobs/Silicon/soulkiller_core.rsi
+    layers:
+    - state: base
+    - state: ai_empty
+      map: ["unshaded"]
+      shader: unshaded
+  # Питание важно: при обесточивании соединение с оператором разрывается.
+  - type: ApcPowerReceiver
+    powerLoad: 1000
+    needsPower: true
