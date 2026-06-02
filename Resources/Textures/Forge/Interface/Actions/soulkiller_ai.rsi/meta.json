@@ -11,6 +11,9 @@
 			"name": "ai_core"
 		},
 		{
+			"name": "kpb_core"
+		},
+		{
 			"name": "camera_light"
 		},
 		{

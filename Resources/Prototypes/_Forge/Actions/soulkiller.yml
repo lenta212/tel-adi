@@ -8,6 +8,6 @@
     priority: -10
     itemIconStyle: BigAction
     icon:
-      sprite: Interface/Actions/actions_ai.rsi
-      state: ai_core
+      sprite: Forge/Interface/Actions/soulkiller_ai.rsi
+      state: kpb_core
     event: !type:SoulkillerReturnToBodyEvent

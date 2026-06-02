@@ -4,15 +4,38 @@
 # Пустое ядро пока оператор не подключится через SoulkillerConnector.
 # ══════════════════════════════════════════════════════════
 
-# Мозг Душегуба — как станционный ИИ, но без законов (нет SiliconLaw*).
+# Мозг Душегуба — копия StationAiBrain, НО без законов
+# (убраны SiliconLawProvider, SiliconLawBound, ActionViewLaws и SiliconLaws-UI).
+# Eye/ContentEye/InputMover/Access/Alerts/тег StationAi обязательны —
+# без них нет ока ИИ, движения и работающих действий.
 - type: entity
   parent: PositronicBrain
   id: SoulkillerBrain
   categories: [ HideSpawnMenu, DoNotMap ]
   components:
   - type: Sprite
+    # Внутри ядра мозг — абстрактная сущность.
     visible: false
+  - type: BlockMovement
+    blockInteraction: false
   - type: ComplexInteraction
+  - type: Actions
+  - type: Access
+    groups:
+    - AllAccess
+  - type: Eye
+    drawFov: false
+  - type: ContentEye
+    maxZoom: "4, 4"
+  - type: Examiner
+  - type: InputMover
+  - type: Alerts
+  - type: Speech
+    speechVerb: Robotic
+  - type: Tag
+    tags:
+    - HideContextMenu
+    - StationAi
 
 # Компоненты, навешиваемые на мозг при вставке в ядро Душегуба.
 # Копия AiHeld, но с фирменными иконками экшенов Tel-Adi и без законов.
