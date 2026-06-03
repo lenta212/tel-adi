@@ -1,43 +1,65 @@
 # ══════════════════════════════════════════════════════════
-# Коннектор КПБ — настенное устройство для подключения к Душегубу.
-# Через alt-клик (verb «Подключиться») оператор переносит сознание
-# в ближайшую свободную оболочку Душегуба. Текстура временная (вендомат Tel-Adi).
+# Капсула Душегуба — криокапсула, куда ложится КПБ.
+# Закрывается как криосон → сознание оператора переносится в оболочку
+# Душегуба, тело остаётся запечатанным внутри. В отличие от обычного
+# криосна, капсулу можно вскрыть снаружи (любой), насильно разорвав
+# контакт и выдернув оператора обратно в тело.
 # ══════════════════════════════════════════════════════════
 
 - type: entity
-  parent: [BaseStructure, BaseStructureDisableToolUse]
+  parent: BaseStructureDynamic
   id: SoulkillerConnector
-  name: коннектор КПБ
-  description: Настенное устройство корпорации Tel-Adi. Позволяет оператору перенести сознание в тело-оболочку (Душегуб) и вернуться обратно. Физическое тело оператора во время переноса остаётся в режиме ожидания.
+  name: капсула Душегуба
+  description: Криокапсула корпорации Tel-Adi. КПБ ложится внутрь, капсула закрывается — и сознание оператора переносится в оболочку Душегуба. Снаружи капсулу можно вскрыть, насильно разорвав контакт и выдернув оператора обратно в тело.
   suffix: ТелАди
   components:
   - type: Transform
     anchored: true
   - type: Sprite
-    # Временный спрайт — использует вендомат Tel-Adi
-    sprite: _Mono/Structures/Machines/VendingMachines/teladi_vend.rsi
+    sprite: Forge/Structures/Machines/soulkiller_pod.rsi
     layers:
     - state: "off"
-      map: ["enum.VendingMachineVisualLayers.Base"]
-    - state: "normal-unshaded"
-      map: ["enum.VendingMachineVisualLayers.BaseUnshaded"]
-      shader: unshaded
+      map: ["base"]
   - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.SoulkillerConnectorVisuals.State:
+        base:
+          Open: { state: open }
+          Closed: { state: "off" }
+          Active: { state: "on" }
+  # Капсула-хранилище: закрытие на КПБ подключает, открытие — насильно отключает.
+  - type: EntityStorage
+    open: false
+    showContents: false
+    openOnMove: false
+  - type: ContainerContainer
+    containers:
+      entity_storage: !type:Container
   - type: Physics
-    bodyType: Static
   - type: Fixtures
     fixtures:
       fix1:
         shape:
           !type:PhysShapeAabb
-          bounds: "-0.25,-0.4,0.25,0.4"
+          bounds: "-0.48,-0.48,0.48,0.48"
         density: 100
         mask:
         - MachineMask
         layer:
         - MachineLayer
-  - type: ApcPowerReceiver
-    powerLoad: 50  # минимальное потребление
-  - type: AccessReader
-    requiredCompany: TelAdi
+  - type: Damageable
+    damageContainer: StructuralInorganic
+    damageModifierSet: StructuralMetallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 400
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalBreak
+      - !type:DoActsBehavior
+        acts: ["Destruction"]
   - type: SoulkillerConnector

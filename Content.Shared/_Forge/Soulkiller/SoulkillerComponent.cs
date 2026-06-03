@@ -51,10 +51,17 @@ public sealed partial class SoulkillerComponent : Component
     public EntityUid? InhabitingMind;
 
     /// <summary>
-    /// The operator's real body, tethered (anchored) to this core while connected.
+    /// The operator's real body, sealed inside the connector capsule while connected.
     /// </summary>
     [DataField]
     public EntityUid? TetheredBody;
+
+    /// <summary>
+    /// The connector capsule the operator's body is sealed inside while connected. Opening it
+    /// forcibly breaks the connection and ejects the body.
+    /// </summary>
+    [DataField]
+    public EntityUid? Connector;
 
     /// <summary>
     /// Species allowed to connect. Only humanoids of this species may use the connector.

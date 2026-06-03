@@ -1,3 +1,4 @@
+using Content.Server.Storage.Components;
 using Content.Shared._CorvaxNext.Silicons.Borgs;
 using Content.Shared._CorvaxNext.Silicons.Borgs.Components;
 using Content.Shared._Forge.Soulkiller;
@@ -7,22 +8,24 @@ using Content.Shared.Mind;
 using Content.Shared.Mobs;
 using Content.Shared.Popups;
 using Content.Shared.Power;
-using Content.Shared.Verbs;
+using Content.Shared.Storage.Components;
+using Content.Shared.Storage.EntitySystems;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
 
 namespace Content.Server._Forge.Soulkiller;
 
 /// <summary>
-/// Implements the "Душегуб" mechanic: an IPC (КПБ) uses a wall connector to move their mind into a
-/// Station-AI core, becoming a fully-functional station AI (eye, cameras, laws, jump-to-core and
-/// borg remote control) — while their real body is frozen in place by the connector and can be
-/// returned to at any time.
+/// Implements the "Душегуб" mechanic: an IPC (КПБ) lies down inside a cryo-style capsule connector.
+/// Closing the capsule moves their mind into a Station-AI core, turning them into a fully-functional
+/// station AI (eye, cameras, jump-to-core, borg remote control) while their real body is sealed inside
+/// the capsule. Unlike a real cryopod, anyone can crack the capsule open from outside to forcibly rip
+/// the operator out (returning their mind and ejecting the body); the operator can also leave via the
+/// "return to body" action. The connection also breaks if the core loses power, is destroyed, or the
+/// body dies / enters crit.
 ///
 /// Uses real mind transfer (<see cref="SharedMindSystem.TransferTo"/>) rather than visiting, so the
-/// station-AI borg-control flow (which itself transfers the mind) works natively. The operator's
-/// original body is stored and the mind is transferred back on return. The connection also breaks
-/// automatically if the core loses power, the core is destroyed, or the body dies / enters crit.
+/// station-AI borg-control flow (which itself transfers the mind) works natively.
 /// </summary>
 public sealed class SoulkillerSystem : SharedSoulkillerSystem
 {
@@ -32,12 +35,19 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     [Dependency] private readonly SharedTransformSystem _xform = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
     [Dependency] private readonly SharedAiRemoteControlSystem _aiRemote = default!;
+    [Dependency] private readonly SharedEntityStorageSystem _entityStorage = default!;
+    [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
 
     public override void Initialize()
     {
         base.Initialize();
 
-        SubscribeLocalEvent<SoulkillerConnectorComponent, GetVerbsEvent<AlternativeVerb>>(OnConnectorVerbs);
+        // The connector is a cryo-style capsule: closing it on an IPC connects them; opening it
+        // (by anyone) forcibly breaks the connection and ejects the body.
+        SubscribeLocalEvent<SoulkillerConnectorComponent, StorageAfterCloseEvent>(OnPodClosed);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, StorageBeforeOpenEvent>(OnPodOpening);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, StorageAfterOpenEvent>(OnPodOpened);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, EntityTerminatingEvent>(OnConnectorTerminating);
 
         SubscribeLocalEvent<SoulkillerInhabitantComponent, SoulkillerReturnToBodyEvent>(OnReturnToBody);
 
@@ -50,43 +60,70 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         SubscribeLocalEvent<AiRemoteControllerComponent, MobStateChangedEvent>(OnControlledBorgMobState);
     }
 
-    private void OnConnectorVerbs(Entity<SoulkillerConnectorComponent> ent, ref GetVerbsEvent<AlternativeVerb> args)
+    // --- Capsule open/close drive the connection ---
+
+    /// <summary>
+    /// Capsule sealed shut: if an IPC is inside, move their mind into a Soulkiller core.
+    /// </summary>
+    private void OnPodClosed(Entity<SoulkillerConnectorComponent> ent, ref StorageAfterCloseEvent args)
     {
-        if (!args.CanInteract || !args.CanAccess)
-            return;
+        var connected = false;
 
-        var user = args.User;
-
-        args.Verbs.Add(new AlternativeVerb
+        if (TryComp<EntityStorageComponent>(ent, out var storage))
         {
-            Text = Loc.GetString("soulkiller-connector-verb-connect"),
-            Priority = 2,
-            Act = () => TryConnect(ent, user),
-        });
+            foreach (var occupant in storage.Contents.ContainedEntities)
+            {
+                if (TryConnect(ent, occupant))
+                {
+                    connected = true;
+                    break;
+                }
+            }
+        }
+
+        SetConnectorVisual(ent, connected ? SoulkillerConnectorState.Active : SoulkillerConnectorState.Closed);
+    }
+
+    /// <summary>
+    /// Capsule is being cracked open: forcibly return any inhabiting mind before the body is ejected.
+    /// This is how someone "rips" an operator out of the Soulkiller.
+    /// </summary>
+    private void OnPodOpening(Entity<SoulkillerConnectorComponent> ent, ref StorageBeforeOpenEvent args)
+    {
+        if (TryGetConnectedCore(ent, out var core))
+            Disconnect(core, openPod: false);
+    }
+
+    private void OnPodOpened(Entity<SoulkillerConnectorComponent> ent, ref StorageAfterOpenEvent args)
+    {
+        SetConnectorVisual(ent, SoulkillerConnectorState.Open);
+    }
+
+    /// <summary>
+    /// Capsule destroyed while connected → break the connection (the body is ejected by the storage).
+    /// </summary>
+    private void OnConnectorTerminating(Entity<SoulkillerConnectorComponent> ent, ref EntityTerminatingEvent args)
+    {
+        if (TryGetConnectedCore(ent, out var core))
+            Disconnect(core, openPod: false);
     }
 
     /// <summary>
     /// Spawns a brain into the connector's linked (or nearest free) core and moves the user's mind
-    /// into it, freezing their body in place.
+    /// into it. The user's body stays sealed inside the capsule. Returns true if a connection was made.
     /// </summary>
-    private void TryConnect(Entity<SoulkillerConnectorComponent> connector, EntityUid user)
+    private bool TryConnect(Entity<SoulkillerConnectorComponent> connector, EntityUid user)
     {
         if (!_mind.TryGetMind(user, out var mindId, out var mind))
-        {
-            _popup.PopupEntity(Loc.GetString("soulkiller-connector-no-mind"), connector, user);
-            return;
-        }
+            return false;
 
         if (mind.VisitingEntity != null)
-        {
-            _popup.PopupEntity(Loc.GetString("soulkiller-connector-already-visiting"), connector, user);
-            return;
-        }
+            return false;
 
         if (!TryResolveSoulkiller(connector, out var core))
         {
             _popup.PopupEntity(Loc.GetString("soulkiller-connector-no-shell"), connector, user);
-            return;
+            return false;
         }
 
         // КПБ-only: the operator must be of the required species (IPC).
@@ -94,14 +131,14 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
             || humanoid.Species.Id != core.Comp.RequiredSpecies)
         {
             _popup.PopupEntity(Loc.GetString("soulkiller-connector-wrong-species"), connector, user);
-            return;
+            return false;
         }
 
         var container = _container.EnsureContainer<ContainerSlot>(core, core.Comp.MindSlotContainerId);
         if (core.Comp.InhabitingMind != null || container.ContainedEntity != null)
         {
             _popup.PopupEntity(Loc.GetString("soulkiller-connector-occupied"), connector, user);
-            return;
+            return false;
         }
 
         // Spawn a brain into the core — inserting it grants the AiHeld components (full station AI).
@@ -110,7 +147,7 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         {
             Del(brain);
             _popup.PopupEntity(Loc.GetString("soulkiller-connector-occupied"), connector, user);
-            return;
+            return false;
         }
 
         var inhabitant = EnsureComp<SoulkillerInhabitantComponent>(brain);
@@ -119,10 +156,11 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         core.Comp.SpawnedBrain = brain;
         core.Comp.InhabitingMind = mindId;
         core.Comp.TetheredBody = user;
+        core.Comp.Connector = connector;
         Dirty(core);
 
-        // Freeze the body in place (by the connector) so it can't be pulled away while connected.
-        TetherBody(user, core);
+        // Tag the sealed body so we can track its death / return it later (the capsule holds it).
+        TagBody(user, core);
 
         // Move the mind into the AI brain (real transfer → borg control etc. work natively).
         _mind.TransferTo(mindId, brain, mind: mind);
@@ -131,31 +169,22 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         _actions.AddAction(brain, ref core.Comp.ReturnActionEntity, core.Comp.ReturnAction);
 
         _popup.PopupEntity(Loc.GetString("soulkiller-connector-connected"), core, user);
+        return true;
     }
 
     /// <summary>
-    /// Freezes the body where it stands (anchors it) and tags it so we can track / release it.
+    /// Tags the sealed body so death / return tracking works. The capsule itself holds the body, so
+    /// no anchoring is needed.
     /// </summary>
-    private void TetherBody(EntityUid body, Entity<SoulkillerComponent> core)
+    private void TagBody(EntityUid body, Entity<SoulkillerComponent> core)
     {
-        _xform.AnchorEntity(body);
-
-        var tether = EnsureComp<SoulkillerTetheredBodyComponent>(body);
-        tether.Core = core;
+        var tag = EnsureComp<SoulkillerTetheredBodyComponent>(body);
+        tag.Core = core;
     }
 
-    /// <summary>
-    /// Releases a tethered body: unanchors it and removes the tag.
-    /// </summary>
     private void ReleaseBody(EntityUid body)
     {
-        if (!HasComp<SoulkillerTetheredBodyComponent>(body))
-            return;
-
         RemComp<SoulkillerTetheredBodyComponent>(body);
-
-        if (!Terminating(body))
-            _xform.Unanchor(body);
     }
 
     private void OnReturnToBody(Entity<SoulkillerInhabitantComponent> ent, ref SoulkillerReturnToBodyEvent args)
@@ -210,15 +239,17 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     }
 
     /// <summary>
-    /// Ends a connection: returns the inhabiting mind to its real body, releases the body, and
-    /// removes the spawned brain so the core empties. Handles the case where the mind is currently
-    /// off in a remote-controlled borg by clearing that link first.
+    /// Ends a connection: returns the inhabiting mind to its real body, releases the body, removes the
+    /// spawned brain so the core empties, and (unless the capsule is already being opened) cracks the
+    /// capsule open to eject the body. Handles the case where the mind is currently off in a
+    /// remote-controlled borg by clearing that link first.
     /// </summary>
-    private void Disconnect(Entity<SoulkillerComponent> core, bool coreTerminating = false)
+    private void Disconnect(Entity<SoulkillerComponent> core, bool coreTerminating = false, bool openPod = true)
     {
         var mindId = core.Comp.InhabitingMind;
         var body = core.Comp.TetheredBody;
         var brain = core.Comp.SpawnedBrain;
+        var connector = core.Comp.Connector;
 
         if (mindId is { } mind)
         {
@@ -248,9 +279,45 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         core.Comp.SpawnedBrain = null;
         core.Comp.InhabitingMind = null;
         core.Comp.TetheredBody = null;
+        core.Comp.Connector = null;
 
         if (!coreTerminating && !Terminating(core))
             Dirty(core);
+
+        // Crack the capsule open to release the body (skip when we're already mid-open).
+        if (openPod
+            && connector is { } conn
+            && !Deleted(conn)
+            && !Terminating(conn)
+            && TryComp<EntityStorageComponent>(conn, out var storage)
+            && !storage.Open)
+        {
+            _entityStorage.OpenStorage(conn, storage);
+        }
+    }
+
+    private void SetConnectorVisual(EntityUid connector, SoulkillerConnectorState state)
+    {
+        _appearance.SetData(connector, SoulkillerConnectorVisuals.State, state);
+    }
+
+    /// <summary>
+    /// Finds the core currently connected through this capsule, if any.
+    /// </summary>
+    private bool TryGetConnectedCore(EntityUid connector, out Entity<SoulkillerComponent> core)
+    {
+        var query = EntityQueryEnumerator<SoulkillerComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (comp.Connector == connector && comp.InhabitingMind != null)
+            {
+                core = (uid, comp);
+                return true;
+            }
+        }
+
+        core = default;
+        return false;
     }
 
     /// <summary>

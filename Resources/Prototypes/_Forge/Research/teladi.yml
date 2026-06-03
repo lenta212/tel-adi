@@ -110,7 +110,7 @@
   entityIcon: EmergencyLimbImplant
   discipline: TelAdi
   tier: 1
-  cost: 6000
+  cost: 15000
   recipeUnlocks:
   - TelAdiEmergencyLimbImplant
   position: 4, 1
