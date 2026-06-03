@@ -23,6 +23,11 @@
   - type: Access
     groups:
     - AllAccess
+    tags:
+    - TelAdi
+  # Душегуб — сотрудник Tel-Adi: открывает фирменные двери и консоли с company-гейтом.
+  - type: Company
+    companyName: TelAdi
   - type: Eye
     drawFov: false
   - type: ContentEye
