@@ -1,7 +1,7 @@
 {
   "version": 1,
   "license": "CC-BY-SA-3.0",
-  "copyright": "Tel-Adi Soulkiller pod, made for Monolith fork.",
+  "copyright": "Tel-Adi Soulkiller capsule, made for Monolith fork.",
   "size": {
     "x": 32,
     "y": 32
@@ -23,11 +23,6 @@
           0.3,
           0.3,
           0.3,
-          0.3
-        ],
-        [
-          0.3,
-          0.3,
           0.3,
           0.3
         ],
@@ -35,9 +30,18 @@
           0.3,
           0.3,
           0.3,
+          0.3,
           0.3
         ],
         [
+          0.3,
+          0.3,
+          0.3,
+          0.3,
+          0.3
+        ],
+        [
+          0.3,
           0.3,
           0.3,
           0.3,
