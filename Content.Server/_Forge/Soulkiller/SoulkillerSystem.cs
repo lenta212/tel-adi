@@ -3,12 +3,14 @@ using Content.Shared._CorvaxNext.Silicons.Borgs;
 using Content.Shared._CorvaxNext.Silicons.Borgs.Components;
 using Content.Shared._Forge.Soulkiller;
 using Content.Shared.Actions;
+using Content.Shared.DeviceLinking;
 using Content.Shared.DeviceLinking.Events;
 using Content.Shared.Humanoid;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
 using Content.Shared.Popups;
 using Content.Shared.Power;
+using Content.Shared.Silicons.StationAi;
 using Content.Shared.Storage.Components;
 using Content.Shared.Storage.EntitySystems;
 using Robust.Shared.Containers;
@@ -57,6 +59,7 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         SubscribeLocalEvent<SoulkillerConnectorComponent, PortDisconnectedEvent>(OnConnectorUnlinked);
 
         SubscribeLocalEvent<SoulkillerInhabitantComponent, SoulkillerReturnToBodyEvent>(OnReturnToBody);
+        SubscribeLocalEvent<SoulkillerInhabitantComponent, SoulkillerJumpToServerEvent>(OnJumpToServer);
 
         SubscribeLocalEvent<SoulkillerComponent, EntityTerminatingEvent>(OnCoreTerminating);
         SubscribeLocalEvent<SoulkillerComponent, PowerChangedEvent>(OnCorePowerChanged);
@@ -220,6 +223,42 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
 
         if (TryComp<SoulkillerComponent>(ent.Comp.Core, out var core))
             Disconnect((ent.Comp.Core, core));
+    }
+
+    /// <summary>
+    /// Jumps the AI's eye to a server linked to its core (e.g. on a remote shuttle), letting the
+    /// operator view and interact around the server. The "jump to core" action brings it back.
+    /// </summary>
+    private void OnJumpToServer(Entity<SoulkillerInhabitantComponent> ent, ref SoulkillerJumpToServerEvent args)
+    {
+        args.Handled = true;
+
+        var core = ent.Comp.Core;
+
+        // Find a server linked to this core through the multitool device-link.
+        EntityUid? server = null;
+        if (TryComp<DeviceLinkSinkComponent>(core, out var sink))
+        {
+            foreach (var source in sink.LinkedSources)
+            {
+                if (!Deleted(source) && HasComp<SoulkillerServerComponent>(source))
+                {
+                    server = source;
+                    break;
+                }
+            }
+        }
+
+        if (server is not { } target)
+        {
+            _popup.PopupEntity(Loc.GetString("soulkiller-no-server"), ent, ent);
+            return;
+        }
+
+        if (!TryComp<StationAiCoreComponent>(core, out var aiCore) || aiCore.RemoteEntity is not { } eye)
+            return;
+
+        _xform.DropNextTo(eye, target);
     }
 
     private void OnCoreTerminating(Entity<SoulkillerComponent> ent, ref EntityTerminatingEvent args)

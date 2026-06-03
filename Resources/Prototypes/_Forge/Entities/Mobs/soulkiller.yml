@@ -81,6 +81,7 @@
   - type: ActionGrant
     actions:
     - ActionSoulkillerJumpToCore
+    - ActionSoulkillerJumpToServer
     - ActionSoulkillerCameraLights
     - ActionOpenRemoteDevicesMenu
   - type: UserInterface

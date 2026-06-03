@@ -86,3 +86,17 @@
     keywords: [ "AI", "console", "interface" ]
     priority: -7
     event: !type:ToggleIntrinsicUIEvent { key: enum.GeneralStationRecordConsoleKey.Key }
+
+# Прыжок ока к связанному серверу Душегуба (например, на удалённый шаттл).
+- type: entity
+  id: ActionSoulkillerJumpToServer
+  name: Прыжок к серверу
+  description: Перебрасывает око ИИ к связанному серверу Душегуба (например, на удалённый шаттл). Назад — «Прыжок к ядру».
+  components:
+  - type: InstantAction
+    priority: -8
+    itemIconStyle: BigAction
+    icon:
+      sprite: Forge/Interface/Actions/soulkiller_ai.rsi
+      state: mass_scanner
+    event: !type:SoulkillerJumpToServerEvent
