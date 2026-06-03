@@ -119,6 +119,20 @@
   - type: ShowJobIcons
   - type: AdvancedPilot
 
+# Летающее «око ИИ» Душегуба — копия StationAiHolo, но с красной
+# текстурой Tel-Adi (state ai_camera из soulkiller_core.rsi).
+- type: entity
+  parent: StationAiHolo
+  id: SoulkillerHolo
+  categories: [ HideSpawnMenu, DoNotMap ]
+  components:
+  - type: Sprite
+    sprite: Forge/Mobs/Silicon/soulkiller_core.rsi
+    layers:
+    - state: ai_camera
+      shader: unshaded
+      map: ["base"]
+
 - type: entity
   parent: PlayerStationAiEmpty
   id: MobSoulkiller
@@ -132,6 +146,9 @@
   - type: ContainerComp
     proto: SoulkillerHeld
     container: station_ai_mind_slot
+  # Красное летающее око вместо дефолтного синего StationAiHolo.
+  - type: StationAiCore
+    remoteEntityProto: SoulkillerHolo
   # Новая текстура ядра Tel-Adi.
   - type: Sprite
     sprite: Forge/Mobs/Silicon/soulkiller_core.rsi
