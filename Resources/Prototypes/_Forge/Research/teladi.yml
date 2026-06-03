@@ -79,3 +79,38 @@
   technologyPrerequisites:
   - ARSTelAdiModsuit
   position: 6, 9
+
+# Униформа Tel-Adi — отдельный узел без зависимостей, открывает все рецепты
+# одежды Tel-Adi в принтере униформы.
+- type: technology
+  id: TelAdiClothing
+  name: research-technology-teladi-clothing
+  entityIcon: ClothingUniformJumpsuitTelAdi
+  discipline: TelAdi
+  tier: 1
+  cost: 4000
+  recipeUnlocks:
+  - TelAdiUniformJumpsuit
+  - TelAdiShoesBoots
+  - TelAdiOuterCoat
+  - TelAdiHeadCap
+  - TelAdiNeckCloak
+  - TelAdiUniformJumpsuitRich
+  - TelAdiOuterCoatRich
+  - MoonlightUniformJumpsuit
+  - MoonlightShoesBoots
+  - MoonlightGloves
+  - MoonlightMaskGas
+  position: 2, 1
+
+# Аварийный имплант-конечность — узел без зависимостей.
+- type: technology
+  id: TelAdiEmergencyLimb
+  name: research-technology-teladi-emergency-limb
+  entityIcon: EmergencyLimbImplant
+  discipline: TelAdi
+  tier: 1
+  cost: 6000
+  recipeUnlocks:
+  - TelAdiEmergencyLimbImplant
+  position: 4, 1

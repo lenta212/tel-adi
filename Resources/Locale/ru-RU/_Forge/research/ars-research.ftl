@@ -5,3 +5,5 @@ research-discipline-tel-adi = Дисциплина Tel-Adi
 research-technology-teladi-ore-processor-industrial = Промышленный переработчик Tel-Adi
 research-technology-teladi-centrifuge = Центрифуга Tel-Adi
 research-technology-teladi-scrap-processor = Переработчик лома Tel-Adi
+research-technology-teladi-clothing = Униформа Tel-Adi
+research-technology-teladi-emergency-limb = Аварийный имплант-конечность Tel-Adi
