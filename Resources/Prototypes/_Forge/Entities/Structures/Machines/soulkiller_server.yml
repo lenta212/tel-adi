@@ -15,11 +15,17 @@
   - type: Transform
     anchored: true
   - type: Sprite
-    sprite: _Mono/Structures/Machines/server.rsi
+    sprite: Structures/Machines/server.rsi
     layers:
-    - state: variant-merc
+    - state: server
+    - state: variant-research
+    - state: server_o
   - type: Appearance
   - type: SoulkillerServer
+  # Обзор для ока ИИ на гриде сервера (например, на шаттле) — иначе «нет камер».
+  - type: StationAiVision
+    range: 16
+    occluded: false
   # Связь с ядром Душегуба — сетевым конфигуратором (мультитулом).
   - type: DeviceLinkSource
     ports:
