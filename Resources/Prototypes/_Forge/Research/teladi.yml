@@ -5,7 +5,7 @@
 - type: techDiscipline
   id: TelAdi
   name: research-discipline-tel-adi
-  color: "#FF0000"
+  color: "#D4AF37"
   icon:
     sprite: Forge/Interface/Misc/company_icons.rsi
     state: tel_adi
