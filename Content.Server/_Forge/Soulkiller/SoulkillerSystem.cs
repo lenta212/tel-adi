@@ -3,6 +3,7 @@ using Content.Shared._CorvaxNext.Silicons.Borgs;
 using Content.Shared._CorvaxNext.Silicons.Borgs.Components;
 using Content.Shared._Forge.Soulkiller;
 using Content.Shared.Actions;
+using Content.Shared.DeviceLinking.Events;
 using Content.Shared.Humanoid;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
@@ -38,6 +39,8 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     [Dependency] private readonly SharedEntityStorageSystem _entityStorage = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
 
+    private const string SoulkillerLinkPort = "SoulkillerLink";
+
     public override void Initialize()
     {
         base.Initialize();
@@ -48,6 +51,10 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         SubscribeLocalEvent<SoulkillerConnectorComponent, StorageBeforeOpenEvent>(OnPodOpening);
         SubscribeLocalEvent<SoulkillerConnectorComponent, StorageAfterOpenEvent>(OnPodOpened);
         SubscribeLocalEvent<SoulkillerConnectorComponent, EntityTerminatingEvent>(OnConnectorTerminating);
+
+        // Multitool linking: a capsule only works with a core it's been explicitly linked to.
+        SubscribeLocalEvent<SoulkillerConnectorComponent, NewLinkEvent>(OnConnectorLinked);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, PortDisconnectedEvent>(OnConnectorUnlinked);
 
         SubscribeLocalEvent<SoulkillerInhabitantComponent, SoulkillerReturnToBodyEvent>(OnReturnToBody);
 
@@ -106,6 +113,26 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     {
         if (TryGetConnectedCore(ent, out var core))
             Disconnect(core, openPod: false);
+    }
+
+    /// <summary>
+    /// Capsule linked to a core with a multitool → remember that core as the connection target.
+    /// </summary>
+    private void OnConnectorLinked(EntityUid uid, SoulkillerConnectorComponent component, NewLinkEvent args)
+    {
+        if (args.SourcePort != SoulkillerLinkPort || !HasComp<SoulkillerComponent>(args.Sink))
+            return;
+
+        component.LinkedSoulkiller = args.Sink;
+    }
+
+    /// <summary>
+    /// Capsule unlinked → forget the core (connecting is no longer possible until re-linked).
+    /// </summary>
+    private void OnConnectorUnlinked(EntityUid uid, SoulkillerConnectorComponent component, PortDisconnectedEvent args)
+    {
+        if (args.Port == SoulkillerLinkPort)
+            component.LinkedSoulkiller = null;
     }
 
     /// <summary>
@@ -327,42 +354,15 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     {
         core = default;
 
+        // Connection is only possible through an explicit multitool link to a core.
         if (connector.Comp.LinkedSoulkiller is { } linked
+            && !Deleted(linked)
             && TryComp<SoulkillerComponent>(linked, out var linkedComp))
         {
             core = (linked, linkedComp);
             return true;
         }
 
-        var origin = _xform.GetMapCoordinates(connector);
-        if (origin.MapId == MapId.Nullspace)
-            return false;
-
-        Entity<SoulkillerComponent>? best = null;
-        var bestDist = float.MaxValue;
-
-        var query = EntityQueryEnumerator<SoulkillerComponent, TransformComponent>();
-        while (query.MoveNext(out var uid, out var comp, out var xform))
-        {
-            if (comp.InhabitingMind != null)
-                continue;
-
-            var coords = _xform.GetMapCoordinates(uid, xform);
-            if (coords.MapId != origin.MapId)
-                continue;
-
-            var dist = (coords.Position - origin.Position).Length();
-            if (dist > connector.Comp.LinkRange || dist >= bestDist)
-                continue;
-
-            bestDist = dist;
-            best = (uid, comp);
-        }
-
-        if (best == null)
-            return false;
-
-        core = best.Value;
-        return true;
+        return false;
     }
 }

@@ -62,4 +62,8 @@
           collection: MetalBreak
       - !type:DoActsBehavior
         acts: ["Destruction"]
+  # Связь с ядром Душегуба — только мультитулом (без авто-поиска ближайшего).
+  - type: DeviceLinkSource
+    ports:
+    - SoulkillerLink
   - type: SoulkillerConnector

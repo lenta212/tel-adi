@@ -154,6 +154,10 @@
   # Красное летающее око вместо дефолтного синего StationAiHolo.
   - type: StationAiCore
     remoteEntityProto: SoulkillerHolo
+  # Приёмник связи: капсулы и серверы привязываются сюда мультитулом.
+  - type: DeviceLinkSink
+    ports:
+    - SoulkillerLink
   # Новая текстура ядра Tel-Adi.
   - type: Sprite
     sprite: Forge/Mobs/Silicon/soulkiller_core.rsi
