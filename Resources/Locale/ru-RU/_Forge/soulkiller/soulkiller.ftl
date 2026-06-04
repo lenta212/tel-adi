@@ -6,3 +6,4 @@ soulkiller-connector-no-shell = Капсула не привязана к ядр
 soulkiller-connector-occupied = Оболочка уже занята другим оператором.
 soulkiller-connector-wrong-species = Коннектор совместим только с нейросетью КПБ.
 soulkiller-no-server = Нет связанного сервера. Свяжите сервер с ядром сетевым конфигуратором.
+soulkiller-capsule-extracting = Вы вытаскиваете оператора из капсулы... (30 сек)

@@ -5,6 +5,7 @@ using Content.Shared._Forge.Soulkiller;
 using Content.Shared.Actions;
 using Content.Shared.DeviceLinking;
 using Content.Shared.DeviceLinking.Events;
+using Content.Shared.DoAfter;
 using Content.Shared.Humanoid;
 using Content.Shared.Mind;
 using Content.Shared.Mobs;
@@ -40,8 +41,15 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     [Dependency] private readonly SharedAiRemoteControlSystem _aiRemote = default!;
     [Dependency] private readonly SharedEntityStorageSystem _entityStorage = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
+    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
 
     private const string SoulkillerLinkPort = "SoulkillerLink";
+
+    /// <summary>Time it takes to forcibly crack an occupied capsule open and rip the operator out.</summary>
+    private static readonly TimeSpan ExtractTime = TimeSpan.FromSeconds(30);
+
+    /// <summary>Connectors currently being opened from code (disconnect / extract) — skip the delay.</summary>
+    private readonly HashSet<EntityUid> _instantOpenConnectors = new();
 
     public override void Initialize()
     {
@@ -50,8 +58,10 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
         // The connector is a cryo-style capsule: closing it on an IPC connects them; opening it
         // (by anyone) forcibly breaks the connection and ejects the body.
         SubscribeLocalEvent<SoulkillerConnectorComponent, StorageAfterCloseEvent>(OnPodClosed);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, StorageOpenAttemptEvent>(OnPodOpenAttempt);
         SubscribeLocalEvent<SoulkillerConnectorComponent, StorageBeforeOpenEvent>(OnPodOpening);
         SubscribeLocalEvent<SoulkillerConnectorComponent, StorageAfterOpenEvent>(OnPodOpened);
+        SubscribeLocalEvent<SoulkillerConnectorComponent, SoulkillerExtractDoAfterEvent>(OnExtractDoAfter);
         SubscribeLocalEvent<SoulkillerConnectorComponent, EntityTerminatingEvent>(OnConnectorTerminating);
 
         // Multitool linking: a capsule only works with a core it's been explicitly linked to.
@@ -107,6 +117,56 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
     private void OnPodOpened(Entity<SoulkillerConnectorComponent> ent, ref StorageAfterOpenEvent args)
     {
         SetConnectorVisual(ent, SoulkillerConnectorState.Open);
+    }
+
+    /// <summary>
+    /// Trying to crack open a capsule with someone sealed inside → require a 30s extraction do-after.
+    /// Opens initiated from code (return-to-body, disconnect, the finished do-after) bypass this.
+    /// </summary>
+    private void OnPodOpenAttempt(Entity<SoulkillerConnectorComponent> ent, ref StorageOpenAttemptEvent args)
+    {
+        if (args.Cancelled || _instantOpenConnectors.Contains(ent.Owner))
+            return;
+
+        // Empty capsule → open instantly.
+        if (!TryComp<EntityStorageComponent>(ent, out var storage) || storage.Contents.ContainedEntities.Count == 0)
+            return;
+
+        // Occupied → ripping the operator out takes time.
+        args.Cancelled = true;
+
+        var doAfter = new DoAfterArgs(EntityManager, args.User, ExtractTime, new SoulkillerExtractDoAfterEvent(), ent.Owner, target: ent.Owner)
+        {
+            BreakOnMove = true,
+            BreakOnDamage = true,
+            CancelDuplicate = true,
+            DuplicateCondition = DuplicateConditions.SameEvent,
+        };
+
+        if (_doAfter.TryStartDoAfter(doAfter) && !args.Silent)
+            _popup.PopupEntity(Loc.GetString("soulkiller-capsule-extracting"), ent, args.User);
+    }
+
+    private void OnExtractDoAfter(Entity<SoulkillerConnectorComponent> ent, ref SoulkillerExtractDoAfterEvent args)
+    {
+        if (args.Cancelled || args.Handled)
+            return;
+
+        args.Handled = true;
+        OpenCapsule(ent.Owner);
+    }
+
+    /// <summary>
+    /// Opens the capsule from code, bypassing the extraction do-after gate.
+    /// </summary>
+    private void OpenCapsule(EntityUid connector)
+    {
+        if (!TryComp<EntityStorageComponent>(connector, out var storage) || storage.Open)
+            return;
+
+        _instantOpenConnectors.Add(connector);
+        _entityStorage.OpenStorage(connector, storage);
+        _instantOpenConnectors.Remove(connector);
     }
 
     /// <summary>
@@ -351,14 +411,13 @@ public sealed class SoulkillerSystem : SharedSoulkillerSystem
             Dirty(core);
 
         // Crack the capsule open to release the body (skip when we're already mid-open).
+        // Bypasses the 30s extraction delay — returning home / power loss / death is immediate.
         if (openPod
             && connector is { } conn
             && !Deleted(conn)
-            && !Terminating(conn)
-            && TryComp<EntityStorageComponent>(conn, out var storage)
-            && !storage.Open)
+            && !Terminating(conn))
         {
-            _entityStorage.OpenStorage(conn, storage);
+            OpenCapsule(conn);
         }
     }
 
