@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
 

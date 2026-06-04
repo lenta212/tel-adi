@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 using Content.Shared.Damage;
 using Content.Shared._Shitmed.Medical.Surgery.Tools;
 using Robust.Shared.GameStates;

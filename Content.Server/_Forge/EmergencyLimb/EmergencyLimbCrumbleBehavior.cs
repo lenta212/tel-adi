@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 using System.Collections.Generic;
 using Content.Server.Destructible;
 using Content.Server.Destructible.Thresholds.Behaviors;

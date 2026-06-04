@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 namespace Content.Shared._Forge.Soulkiller;
 
 /// <summary>

@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 using Content.Server.Storage.Components;
 using Content.Shared._CorvaxNext.Silicons.Borgs;
 using Content.Shared._CorvaxNext.Silicons.Borgs.Components;

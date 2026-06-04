@@ -1,3 +1,4 @@
+// Author: @lenta313. Все права не защищены / No rights reserved.
 using System.Linq;
 using Content.Shared._Forge.EmergencyLimb;
 using Content.Shared._Shitmed.Medical.Surgery;
