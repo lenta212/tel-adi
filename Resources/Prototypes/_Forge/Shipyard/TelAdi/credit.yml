@@ -1,7 +1,7 @@
 - type: vessel
   id: teladi_credit
   parent: BaseVessel
-  name: 'Tel-Adi Credit'
+  name: 'Банкрот'
   description: Боевое судно группы безопасности Tel-Adi. Иногда защита инвестиций требует аргументов покрупнее.
   price: 250000
   category: Large
@@ -14,7 +14,7 @@
 
 - type: gameMap
   id: teladi_credit
-  mapName: 'Tel-Adi Credit'
+  mapName: 'Банкрот'
   mapPath: /Maps/_Forge/Shuttles/TelAdi/credit.yml
   minPlayers: 0
   stations:
@@ -22,7 +22,7 @@
       stationProto: StandardFrontierVessel
       components:
         - type: StationNameSetup
-          mapNameTemplate: 'Tel-Adi Credit {1}'
+          mapNameTemplate: 'Банкрот {1}'
           nameGenerator:
             !type:NanotrasenNameGenerator
             prefixCreator: '14'
